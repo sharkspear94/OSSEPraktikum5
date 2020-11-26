@@ -2,7 +2,7 @@ package de.hfu.IntegrationTest;
 
 import static org.junit.Assert.assertEquals;
 
-
+import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.util.List;
 
@@ -10,8 +10,13 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.hfu.residents.domain.Resident;
+import de.hfu.residents.repository.ResidentRepository;
 import de.hfu.residents.service.BaseResidentService;
 import de.hfu.residents.service.ResidentServiceException;
+
+import static org.easymock.EasyMock.*;
+
+
 
 public class ResidentTest {
 	
@@ -66,6 +71,26 @@ public class ResidentTest {
 	public void testgetFilteredResidentsListEmpty() {
 		List<Resident> l = bR.getFilteredResidentsList(testResidentFilterEmpty);
 		assertEquals(0,l.size());
+	}
+	@Test
+	public void testWithMock() {
+		ResidentRepository rR = createMock(ResidentRepository.class);
+		List<Resident> residentList1 = new ArrayList<Resident>() {{
+			add(new Resident("Felix","Kuhn","Testweg","Fuwa",cal.getGregorianChange()));
+			add(new Resident("AARA","Kohn","Boddinstr","Berlin",cal1.getGregorianChange()));
+		}};
+		
+		expect(rR.getResidents()).andReturn(residentList1);
+		
+		replay(rR);
+		
+		BaseResidentService testBase = new BaseResidentService();
+		testBase.setResidentRepository(rR);
+		
+		
+		assertEquals(residentList1.get(0).getFamilyName(),testBase.getFilteredResidentsList(testResidentFilter).get(0).getFamilyName());
+		
+		verify(rR);
 	}
 	
 	
